@@ -10,6 +10,12 @@ import LoginScreen from './screens/LoginScreen';
 const Stack = createStackNavigator();
 
 export default function App() {
+  // const {isFirstLaunch, setIsFirastLaunch} = React.useState(null);
+
+  // useEffect(() => {
+
+  // }, []);
+
   return (
     <NavigationContainer>
     <Stack.Navigator screenOptions={{headerShown:false}}>
