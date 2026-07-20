@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useLogStore } from '../../stores/useLogStore';
 import ChipSelector from '../../components/forms/ChipSelector';
 import FormField from '../../components/forms/FormField';
-import { colors, radius, spacing, fontSize } from '../../constants/theme';
+import Screen from '../../components/ui/Screen';
+import { PrimaryButton } from '../../components/ui/Button';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
 import { nowISO } from '../../utils/dates';
 import type { MealType, Portion } from '../../types/models';
 
@@ -34,32 +30,26 @@ export default function FoodLogEntryScreen() {
   const [meal, setMeal] = useState<string[]>(['snack']);
   const [portion, setPortion] = useState<string[]>([]);
   const [ingredientsText, setIngredientsText] = useState('');
-  const [saving, setSaving] = useState(false);
 
   const save = async () => {
     if (!name.trim()) return;
-    setSaving(true);
-    try {
-      await addFood({
-        name: name.trim(),
-        mealType: (meal[0] as MealType) ?? 'snack',
-        ingredients: ingredientsText
-          .split(',')
-          .map((i) => i.trim().toLowerCase())
-          .filter(Boolean),
-        portion: (portion[0] as Portion) ?? null,
-        barcode: null,
-        source: 'manual',
-        loggedAt: nowISO(),
-      });
-      navigation.goBack();
-    } finally {
-      setSaving(false);
-    }
+    await addFood({
+      name: name.trim(),
+      mealType: (meal[0] as MealType) ?? 'snack',
+      ingredients: ingredientsText
+        .split(',')
+        .map((i) => i.trim().toLowerCase())
+        .filter(Boolean),
+      portion: (portion[0] as Portion) ?? null,
+      barcode: null,
+      source: 'manual',
+      loggedAt: nowISO(),
+    });
+    navigation.goBack();
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <Screen topInset={false}>
       <Text style={styles.title}>Log food</Text>
 
       <FormField label="What did you eat?">
@@ -90,23 +80,15 @@ export default function FoodLogEntryScreen() {
         />
       </FormField>
 
-      <TouchableOpacity
-        style={[styles.button, !name.trim() && styles.buttonDisabled]}
-        onPress={save}
-        disabled={saving || !name.trim()}
-      >
-        <Text style={styles.buttonText}>{saving ? 'Saving…' : 'Save'}</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <PrimaryButton label="Save" onPress={save} disabled={!name.trim()} style={styles.button} />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, maxWidth: 560, width: '100%', alignSelf: 'center' },
   title: {
     fontSize: fontSize.lg,
-    fontWeight: '800',
+    fontWeight: fontWeight.heavy,
     color: colors.text,
     marginBottom: spacing.lg,
   },
@@ -119,13 +101,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     backgroundColor: colors.surface,
   },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
+  button: { marginBottom: spacing.xl },
 });

@@ -1,18 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useLogStore } from '../../stores/useLogStore';
 import { COPING_ACTIVITIES, STRESS_TRIGGERS } from '../../constants/symptoms';
 import ChipSelector from '../../components/forms/ChipSelector';
 import FormField from '../../components/forms/FormField';
 import SeveritySlider from '../../components/forms/SeveritySlider';
-import { colors, radius, spacing, fontSize } from '../../constants/theme';
+import Screen from '../../components/ui/Screen';
+import { PrimaryButton } from '../../components/ui/Button';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
 
 export default function DailyFactorsScreen() {
   const navigation = useNavigation<{ goBack: () => void }>();
@@ -24,7 +20,6 @@ export default function DailyFactorsScreen() {
   const [water, setWater] = useState('');
   const [exercise, setExercise] = useState('');
   const [coping, setCoping] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     refresh();
@@ -49,25 +44,20 @@ export default function DailyFactorsScreen() {
   };
 
   const save = async () => {
-    setSaving(true);
-    try {
-      await saveFactors({
-        stressLevel: stress,
-        stressTriggers: triggers,
-        sleepHours: parseNum(sleepHours),
-        sleepQuality,
-        waterGlasses: parseNum(water),
-        exerciseMinutes: parseNum(exercise),
-        copingActivities: coping,
-      });
-      navigation.goBack();
-    } finally {
-      setSaving(false);
-    }
+    await saveFactors({
+      stressLevel: stress,
+      stressTriggers: triggers,
+      sleepHours: parseNum(sleepHours),
+      sleepQuality,
+      waterGlasses: parseNum(water),
+      exerciseMinutes: parseNum(exercise),
+      copingActivities: coping,
+    });
+    navigation.goBack();
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <Screen topInset={false}>
       <Text style={styles.title}>Daily check-in</Text>
       <Text style={styles.subtitle}>One entry per day — saving again updates today.</Text>
 
@@ -128,19 +118,15 @@ export default function DailyFactorsScreen() {
         />
       </FormField>
 
-      <TouchableOpacity style={styles.button} onPress={save} disabled={saving}>
-        <Text style={styles.buttonText}>{saving ? 'Saving…' : 'Save check-in'}</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <PrimaryButton label="Save check-in" onPress={save} style={styles.button} />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, maxWidth: 560, width: '100%', alignSelf: 'center' },
   title: {
     fontSize: fontSize.lg,
-    fontWeight: '800',
+    fontWeight: fontWeight.heavy,
     color: colors.text,
     marginBottom: spacing.xs,
   },
@@ -154,12 +140,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     backgroundColor: colors.surface,
   },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  buttonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
+  button: { marginBottom: spacing.xl },
 });

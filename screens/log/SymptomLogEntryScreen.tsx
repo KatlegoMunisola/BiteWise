@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native';
+import { StyleSheet, Text, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useLogStore } from '../../stores/useLogStore';
 import { SYMPTOMS } from '../../constants/symptoms';
 import ChipSelector from '../../components/forms/ChipSelector';
 import FormField from '../../components/forms/FormField';
 import SeveritySlider from '../../components/forms/SeveritySlider';
-import { colors, radius, spacing, fontSize } from '../../constants/theme';
+import Screen from '../../components/ui/Screen';
+import { PrimaryButton } from '../../components/ui/Button';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
 import { nowISO } from '../../utils/dates';
 import type { SymptomType } from '../../types/models';
 
@@ -23,36 +19,30 @@ export default function SymptomLogEntryScreen() {
   const [severity, setSeverity] = useState<number | null>(null);
   const [bristol, setBristol] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
-  const [saving, setSaving] = useState(false);
 
   const selectedDef = SYMPTOMS.find((s) => s.id === type[0]);
   const valid = type.length > 0 && severity != null;
 
   const save = async () => {
     if (!valid) return;
-    setSaving(true);
-    try {
-      await addSymptom({
-        symptomType: type[0] as SymptomType,
-        severity: severity!,
-        bristolScale: selectedDef?.usesBristol ? bristol : null,
-        durationMinutes: null,
-        notes: notes.trim() || null,
-        loggedAt: nowISO(),
-      });
-      navigation.goBack();
-    } finally {
-      setSaving(false);
-    }
+    await addSymptom({
+      symptomType: type[0] as SymptomType,
+      severity: severity!,
+      bristolScale: selectedDef?.usesBristol ? bristol : null,
+      durationMinutes: null,
+      notes: notes.trim() || null,
+      loggedAt: nowISO(),
+    });
+    navigation.goBack();
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <Screen topInset={false}>
       <Text style={styles.title}>Log symptom</Text>
 
       <FormField label="Symptom">
         <ChipSelector
-          options={SYMPTOMS.map((s) => ({ value: s.id, label: `${s.emoji} ${s.label}` }))}
+          options={SYMPTOMS.map((s) => ({ value: s.id, label: s.label }))}
           selected={type}
           onChange={setType}
           multi={false}
@@ -80,23 +70,15 @@ export default function SymptomLogEntryScreen() {
         />
       </FormField>
 
-      <TouchableOpacity
-        style={[styles.button, !valid && styles.buttonDisabled]}
-        onPress={save}
-        disabled={saving || !valid}
-      >
-        <Text style={styles.buttonText}>{saving ? 'Saving…' : 'Save'}</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      <PrimaryButton label="Save" onPress={save} disabled={!valid} style={styles.button} />
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, maxWidth: 560, width: '100%', alignSelf: 'center' },
   title: {
     fontSize: fontSize.lg,
-    fontWeight: '800',
+    fontWeight: fontWeight.heavy,
     color: colors.text,
     marginBottom: spacing.lg,
   },
@@ -110,13 +92,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   notesInput: { minHeight: 80, textAlignVertical: 'top' },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: fontSize.md, fontWeight: '700' },
+  button: { marginBottom: spacing.xl },
 });

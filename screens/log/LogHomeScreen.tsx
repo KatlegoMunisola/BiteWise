@@ -1,10 +1,22 @@
 import React, { useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useLogStore } from '../../stores/useLogStore';
 import { symptomDef } from '../../constants/symptoms';
-import { colors, radius, spacing, fontSize } from '../../constants/theme';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
+import { duration } from '../../constants/motion';
 import { format, parseISO } from 'date-fns';
+import Screen from '../../components/ui/Screen';
+import Card from '../../components/ui/Card';
+import Icon from '../../components/ui/Icon';
+import EmptyState from '../../components/ui/EmptyState';
+import usePressScale from '../../hooks/usePressScale';
+import useEntranceAnimation from '../../hooks/useEntranceAnimation';
+import type { Ionicons } from '@expo/vector-icons';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export default function LogHomeScreen() {
   const navigation = useNavigation<{ navigate: (s: string) => void }>();
@@ -22,7 +34,7 @@ export default function LogHomeScreen() {
       time: f.loggedAt,
       title: f.name,
       detail: `${f.mealType}${f.portion ? ` · ${f.portion}` : ''}`,
-      emoji: '🍽️',
+      icon: 'restaurant-outline' as const,
     })),
     ...symptoms.map((s) => {
       const def = symptomDef(s.symptomType);
@@ -31,81 +43,109 @@ export default function LogHomeScreen() {
         time: s.loggedAt,
         title: def.label,
         detail: `severity ${s.severity}/10${s.bristolScale ? ` · Bristol ${s.bristolScale}` : ''}`,
-        emoji: def.emoji,
+        icon: def.icon,
       };
     }),
   ].sort((a, b) => (a.time < b.time ? -1 : 1));
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <Screen>
       <Text style={styles.heading}>Today · {format(parseISO(date), 'EEE d MMM')}</Text>
 
       <View style={styles.actions}>
-        <ActionButton label="Food" emoji="🍽️" onPress={() => navigation.navigate('FoodLogEntry')} />
         <ActionButton
+          index={0}
+          label="Food"
+          icon="restaurant-outline"
+          onPress={() => navigation.navigate('FoodLogEntry')}
+        />
+        <ActionButton
+          index={1}
           label="Symptom"
-          emoji="🩺"
+          icon="medkit-outline"
           onPress={() => navigation.navigate('SymptomLogEntry')}
         />
         <ActionButton
+          index={2}
           label="Daily check-in"
-          emoji="🧘"
+          icon="leaf-outline"
           onPress={() => navigation.navigate('DailyFactors')}
         />
       </View>
 
       {factors?.stressLevel != null && (
-        <View style={styles.factorsCard}>
+        <Card tint="primaryLight" bordered={false} style={styles.factorsCard}>
           <Text style={styles.factorsText}>
             Daily check-in: stress {factors.stressLevel}/10
             {factors.sleepHours != null ? ` · sleep ${factors.sleepHours}h` : ''}
             {factors.waterGlasses != null ? ` · water ${factors.waterGlasses}` : ''}
           </Text>
-        </View>
+        </Card>
       )}
 
       <Text style={styles.sectionTitle}>Timeline</Text>
       {timeline.length === 0 ? (
-        <Text style={styles.empty}>Nothing logged yet today. Add your first entry above.</Text>
+        <EmptyState
+          icon="time-outline"
+          title="Nothing logged yet today"
+          description="Add your first entry above."
+        />
       ) : (
-        timeline.map((item) => (
-          <View key={item.key} style={styles.entry}>
-            <Text style={styles.entryEmoji}>{item.emoji}</Text>
+        timeline.map((item, i) => (
+          <Animated.View
+            key={item.key}
+            entering={FadeInDown.duration(duration.base).delay(Math.min(i, 6) * 30)}
+            style={styles.entry}
+          >
+            <Icon name={item.icon} size="lg" color={colors.primary} />
             <View style={styles.entryBody}>
               <Text style={styles.entryTitle}>{item.title}</Text>
               <Text style={styles.entryDetail}>{item.detail}</Text>
             </View>
             <Text style={styles.entryTime}>{format(parseISO(item.time), 'HH:mm')}</Text>
-          </View>
+          </Animated.View>
         ))
       )}
-    </ScrollView>
+    </Screen>
   );
 }
 
 function ActionButton({
+  index,
   label,
-  emoji,
+  icon,
   onPress,
 }: {
+  index: number;
   label: string;
-  emoji: string;
+  icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
 }) {
+  const { animatedStyle: pressStyle, onPressIn, onPressOut } = usePressScale();
+  const entranceStyle = useEntranceAnimation(index);
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    onPress();
+  };
+
   return (
-    <TouchableOpacity style={styles.action} onPress={onPress}>
-      <Text style={styles.actionEmoji}>{emoji}</Text>
+    <AnimatedPressable
+      style={[styles.action, pressStyle, entranceStyle]}
+      onPress={handlePress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+    >
+      <Icon name={icon} size="lg" color={colors.primary} />
       <Text style={styles.actionLabel}>{label}</Text>
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, maxWidth: 560, width: '100%', alignSelf: 'center' },
   heading: {
     fontSize: fontSize.lg,
-    fontWeight: '800',
+    fontWeight: fontWeight.heavy,
     color: colors.text,
     marginBottom: spacing.lg,
   },
@@ -118,33 +158,27 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
     padding: spacing.md,
+    gap: spacing.xs,
   },
-  actionEmoji: { fontSize: 24, marginBottom: spacing.xs },
-  actionLabel: { fontSize: fontSize.sm, color: colors.text, fontWeight: '600' },
-  factorsCard: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    marginBottom: spacing.lg,
-  },
+  actionLabel: { fontSize: fontSize.sm, color: colors.text, fontWeight: fontWeight.medium },
+  factorsCard: { marginBottom: spacing.lg },
   factorsText: { color: colors.text, fontSize: fontSize.sm },
   sectionTitle: {
     fontSize: fontSize.md,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.text,
     marginBottom: spacing.md,
   },
-  empty: { color: colors.textMuted, fontSize: fontSize.sm },
   entry: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.md,
     paddingVertical: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
   },
-  entryEmoji: { fontSize: 20, marginRight: spacing.md },
   entryBody: { flex: 1 },
-  entryTitle: { fontSize: fontSize.md, color: colors.text, fontWeight: '600' },
+  entryTitle: { fontSize: fontSize.md, color: colors.text, fontWeight: fontWeight.medium },
   entryDetail: { fontSize: fontSize.sm, color: colors.textMuted },
   entryTime: { fontSize: fontSize.sm, color: colors.textMuted },
 });

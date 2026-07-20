@@ -1,6 +1,17 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { colors, radius, spacing, fontSize } from '../../constants/theme';
+import React, { useEffect } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
+import { colors, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
+import { duration, easing } from '../../constants/motion';
+import usePressScale from '../../hooks/usePressScale';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface Option {
   value: string;
@@ -16,6 +27,7 @@ interface Props {
 
 export default function ChipSelector({ options, selected, onChange, multi = true }: Props) {
   const toggle = (value: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
     if (multi) {
       onChange(
         selected.includes(value) ? selected.filter((v) => v !== value) : [...selected, value]
@@ -27,21 +39,42 @@ export default function ChipSelector({ options, selected, onChange, multi = true
 
   return (
     <View style={styles.row}>
-      {options.map((opt) => {
-        const active = selected.includes(opt.value);
-        return (
-          <TouchableOpacity
-            key={opt.value}
-            style={[styles.chip, active && styles.chipActive]}
-            onPress={() => toggle(opt.value)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
-          >
-            <Text style={[styles.label, active && styles.labelActive]}>{opt.label}</Text>
-          </TouchableOpacity>
-        );
-      })}
+      {options.map((opt) => (
+        <Chip
+          key={opt.value}
+          label={opt.label}
+          active={selected.includes(opt.value)}
+          onPress={() => toggle(opt.value)}
+        />
+      ))}
     </View>
+  );
+}
+
+function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  const { animatedStyle: pressStyle, onPressIn, onPressOut } = usePressScale();
+  const activeProgress = useSharedValue(active ? 1 : 0);
+
+  useEffect(() => {
+    activeProgress.value = withTiming(active ? 1 : 0, { duration: duration.fast, easing: easing.standard });
+  }, [active, activeProgress]);
+
+  const colorStyle = useAnimatedStyle(() => ({
+    backgroundColor: interpolateColor(activeProgress.value, [0, 1], [colors.surface, colors.primary]),
+    borderColor: interpolateColor(activeProgress.value, [0, 1], [colors.border, colors.primary]),
+  }));
+
+  return (
+    <AnimatedPressable
+      style={[styles.chip, colorStyle, pressStyle]}
+      onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+    >
+      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
+    </AnimatedPressable>
   );
 }
 
@@ -54,21 +87,15 @@ const styles = StyleSheet.create({
   chip: {
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
   },
   label: {
     fontSize: fontSize.sm,
     color: colors.text,
   },
   labelActive: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.onPrimary,
+    fontWeight: fontWeight.medium,
   },
 });

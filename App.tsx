@@ -1,9 +1,11 @@
 import 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import OnboardingScreen from './screens/OnboardingScreen';
 import { SignInScreen, SignUpScreen } from './screens/auth/AuthScreens';
@@ -15,9 +17,10 @@ import MainTabs from './navigation/MainTabs';
 import { useAppStore } from './stores/useAppStore';
 import { useAuthStore } from './stores/useAuthStore';
 import { syncAll } from './services/sync';
-import { colors } from './constants/theme';
+import { colors, spacing } from './constants/theme';
+import Logo from './components/ui/Logo';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   const { onboarded, profileReady, loadFlags } = useAppStore();
@@ -50,54 +53,68 @@ export default function App() {
   if (onboarded === null || initializing) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Logo size={56} />
+        <ActivityIndicator size="large" color={colors.primary} style={styles.loadingSpinner} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!onboarded ? (
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        ) : !user ? (
-          <>
-            <Stack.Screen name="SignIn" component={SignInScreen} />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-          </>
-        ) : !profileReady ? (
-          <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
-        ) : (
-          <>
-            <Stack.Screen name="Main" component={MainTabs} />
-            <Stack.Screen
-              name="FoodLogEntry"
-              component={FoodLogEntryScreen}
-              options={{ presentation: 'modal', headerShown: true, title: 'Log food' }}
-            />
-            <Stack.Screen
-              name="SymptomLogEntry"
-              component={SymptomLogEntryScreen}
-              options={{ presentation: 'modal', headerShown: true, title: 'Log symptom' }}
-            />
-            <Stack.Screen
-              name="DailyFactors"
-              component={DailyFactorsScreen}
-              options={{ presentation: 'modal', headerShown: true, title: 'Daily check-in' }}
-            />
-          </>
-        )}
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={styles.root}>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {!onboarded ? (
+              <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            ) : !user ? (
+              <>
+                <Stack.Screen name="SignIn" component={SignInScreen} />
+                <Stack.Screen name="SignUp" component={SignUpScreen} />
+              </>
+            ) : !profileReady ? (
+              <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
+            ) : (
+              <>
+                <Stack.Screen name="Main" component={MainTabs} />
+                <Stack.Screen
+                  name="Onboarding"
+                  component={OnboardingScreen}
+                  options={{ presentation: 'modal' }}
+                />
+                <Stack.Screen
+                  name="FoodLogEntry"
+                  component={FoodLogEntryScreen}
+                  options={{ presentation: 'modal', headerShown: true, title: 'Log food' }}
+                />
+                <Stack.Screen
+                  name="SymptomLogEntry"
+                  component={SymptomLogEntryScreen}
+                  options={{ presentation: 'modal', headerShown: true, title: 'Log symptom' }}
+                />
+                <Stack.Screen
+                  name="DailyFactors"
+                  component={DailyFactorsScreen}
+                  options={{ presentation: 'modal', headerShown: true, title: 'Daily check-in' }}
+                />
+              </>
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   loading: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
+  },
+  loadingSpinner: {
+    marginTop: spacing.lg,
   },
 });

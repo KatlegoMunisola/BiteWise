@@ -7,6 +7,9 @@ import { colors, radius } from '../../constants/theme';
  * (no image assets, no SVG library) — renders identically everywhere,
  * ships with zero extra native dependencies, and updates instantly via
  * Fast Refresh instead of requiring a native rebuild.
+ *
+ * Radii/sizes below are bespoke illustration geometry, not UI-control
+ * shapes — intentionally exempt from the `radius` design tokens.
  */
 
 const CARD_SIZE = 236;

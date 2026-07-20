@@ -10,7 +10,9 @@ import {
   View,
 } from 'react-native';
 import { useAuthStore } from '../../stores/useAuthStore';
-import { colors, radius, spacing, fontSize } from '../../constants/theme';
+import { colors, contentWidth, elevation, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
+import Card from '../../components/ui/Card';
+import Logo from '../../components/ui/Logo';
 
 interface Props {
   mode: 'signIn' | 'signUp';
@@ -41,8 +43,8 @@ function AuthForm({ mode, onSwitchMode }: Props) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.card}>
-        <Text style={styles.title}>BiteWise</Text>
+      <Card style={styles.card} bordered={false}>
+        <Logo variant="lockup" size={56} backgroundColor={colors.background} />
         <Text style={styles.subtitle}>
           {mode === 'signIn' ? 'Welcome back' : 'Create your account'}
         </Text>
@@ -78,7 +80,7 @@ function AuthForm({ mode, onSwitchMode }: Props) {
 
         <TouchableOpacity style={styles.button} onPress={submit} disabled={busy}>
           {busy ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
             <Text style={styles.buttonText}>{mode === 'signIn' ? 'Sign in' : 'Sign up'}</Text>
           )}
@@ -91,7 +93,7 @@ function AuthForm({ mode, onSwitchMode }: Props) {
               : 'Already have an account? Sign in'}
           </Text>
         </TouchableOpacity>
-      </View>
+      </Card>
     </KeyboardAvoidingView>
   );
 }
@@ -113,17 +115,12 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.background,
-    borderRadius: radius.lg,
+    alignItems: 'center',
     padding: spacing.xl,
-    maxWidth: 420,
+    maxWidth: contentWidth.narrow,
     width: '100%',
     alignSelf: 'center',
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: '800',
-    color: colors.primary,
-    textAlign: 'center',
+    ...elevation.med,
   },
   subtitle: {
     fontSize: fontSize.md,
@@ -137,12 +134,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     padding: spacing.sm,
     marginBottom: spacing.md,
+    width: '100%',
   },
   devBannerText: {
     fontSize: fontSize.sm,
     color: colors.text,
   },
   input: {
+    width: '100%',
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     color: colors.text,
     marginBottom: spacing.md,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
   },
   error: {
     color: colors.danger,
@@ -158,6 +157,7 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
   },
   button: {
+    width: '100%',
     backgroundColor: colors.primary,
     borderRadius: radius.md,
     padding: spacing.md,
@@ -165,9 +165,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   buttonText: {
-    color: '#fff',
+    color: colors.onPrimary,
     fontSize: fontSize.md,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
   },
   switchText: {
     color: colors.primary,

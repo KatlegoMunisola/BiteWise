@@ -1,8 +1,9 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
+import { useNavigation } from '@react-navigation/native';
 import { useAppStore } from '../stores/useAppStore';
-import { colors, radius, spacing, fontSize } from '../constants/theme';
+import { colors, radius, spacing, fontSize, fontWeight, lineHeight } from '../constants/theme';
 import {
   AllergenIllustration,
   InsightIllustration,
@@ -15,7 +16,7 @@ const Skip = ({ skipLabel, onPress }: { skipLabel: string; onPress: () => void }
     hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
     style={{ marginLeft: spacing.lg }}
   >
-    <Text style={{ color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '600' }}>
+    <Text style={{ color: colors.textMuted, fontSize: fontSize.sm, fontWeight: fontWeight.medium }}>
       {skipLabel}
     </Text>
   </TouchableOpacity>
@@ -27,14 +28,14 @@ const Pill = ({ label, onPress }: { label: string; onPress: () => void }) => (
     style={{
       marginRight: spacing.lg,
       backgroundColor: colors.primary,
-      borderRadius: radius.lg,
+      borderRadius: radius.pill,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,
     }}
   >
     <Text
       numberOfLines={1}
-      style={{ color: '#fff', fontSize: fontSize.md, fontWeight: '700' }}
+      style={{ color: colors.onPrimary, fontSize: fontSize.md, fontWeight: fontWeight.bold }}
     >
       {label}
     </Text>
@@ -61,6 +62,18 @@ const Dots = ({ selected }: { selected: boolean }) => (
 
 const OnboardingScreen = () => {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
+  const navigation = useNavigation<{ canGoBack: () => boolean; goBack: () => void }>();
+
+  // When replayed from the profile screen this is pushed on top of the
+  // existing stack, so finishing should just pop back instead of
+  // re-running first-launch onboarding bookkeeping.
+  const finish = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      completeOnboarding();
+    }
+  };
 
   return (
     <Onboarding
@@ -68,14 +81,14 @@ const OnboardingScreen = () => {
       titleStyles={{
         color: colors.text,
         fontSize: fontSize.xl,
-        fontWeight: '800',
+        fontWeight: fontWeight.heavy,
         paddingHorizontal: spacing.lg,
         paddingBottom: spacing.sm,
       }}
       subTitleStyles={{
         color: colors.textMuted,
         fontSize: fontSize.md,
-        lineHeight: 22,
+        lineHeight: lineHeight.md,
         paddingHorizontal: spacing.lg,
       }}
       imageContainerStyles={{ paddingBottom: spacing.xl }}
@@ -83,8 +96,8 @@ const OnboardingScreen = () => {
       NextButtonComponent={Next}
       DoneButtonComponent={Done}
       DotComponent={Dots}
-      onSkip={completeOnboarding}
-      onDone={completeOnboarding}
+      onSkip={finish}
+      onDone={finish}
       pages={[
         {
           backgroundColor: colors.primaryLight,
