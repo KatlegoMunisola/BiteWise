@@ -44,7 +44,7 @@ function AuthForm({ mode, onSwitchMode }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Card style={styles.card} bordered={false}>
-        <Logo variant="lockup" size={56} backgroundColor={colors.background} />
+        <Logo variant="lockup" size={56} />
         <Text style={styles.subtitle}>
           {mode === 'signIn' ? 'Welcome back' : 'Create your account'}
         </Text>
