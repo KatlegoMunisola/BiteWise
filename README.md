@@ -1,3 +1,29 @@
+# BiteWise
+
+## Running the app
+
+```bash
+npm install
+npx expo start        # scan the QR code with Expo Go, or press w for web
+npm test              # unit tests
+npm run typecheck     # TypeScript check
+```
+
+### Firebase setup (optional during development)
+
+Copy `.env.example` to `.env` and fill in your Firebase web app config
+(`EXPO_PUBLIC_FIREBASE_*`). Enable **Email/Password auth** and **Cloud
+Firestore** in the Firebase console, and publish `firebase/firestore.rules`.
+Without a `.env`, the app runs in local-only mode: any email/password signs
+you in and data stays on the device.
+
+> Windows + Node 24 note: Expo SDK 50's CLI crashes at startup
+> (`mkdir 'node:sea'`). Either use Node ≤ 20, or re-apply the one-line filter
+> patch in `node_modules/@expo/cli/build/src/start/server/metro/externals.js`
+> after a fresh install (filter out builtin names containing `:`).
+
+---
+
 Project Overview:
 
 This project proposes the development of a mobile app that combines symptom tracking, allergen analysis, dietary guidance, and stress management tools to help individuals with food allergies and IBS manage their conditions. 
