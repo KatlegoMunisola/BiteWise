@@ -1,30 +1,60 @@
 # BiteWise
 
+This is a **bare React Native project** (not Expo-managed). It uses some
+`expo-*` libraries (expo-sqlite, expo-crypto, expo-secure-store,
+expo-status-bar) as plain autolinked native modules, but building, running,
+and bundling all go through the standard React Native CLI + Gradle + adb —
+no `expo` CLI commands anywhere in the loop. The native `android/` project is
+committed and is the source of truth; it isn't regenerated on each run.
+
+There is currently no web target (dropped along with `expo start --web`) and
+no `ios/` project yet (this has only been built for Android so far).
+
+## One-time machine setup
+
+- **JDK 17** and the **Android SDK** (platform 34, platform-tools,
+  build-tools), with `ANDROID_HOME` set and `platform-tools` on `PATH`.
+- Either a physical Android device with USB/wireless debugging enabled, or an
+  emulator (see below).
+
 ## Running the app
 
 ```bash
 npm install
-npx expo start        # press w for web
-npm test              # unit tests
-npm run typecheck     # TypeScript check
+npx react-native start          # Metro bundler
 ```
 
-## Testing on your phone (Android dev build)
+In a second terminal, with a device/emulator connected (`adb devices` shows it):
 
-This project uses a **development build** (`expo-dev-client`), not Expo Go.
+```bash
+npx react-native run-android    # builds, installs, and launches
+```
 
-One-time machine setup: JDK 17 + Android SDK (platform 34, platform-tools,
-build-tools) with `ANDROID_HOME` set and `platform-tools` on `PATH`.
+After the first build, you can leave Metro running and just relaunch the app
+on the device — it reconnects automatically. Rebuild (`run-android`) again
+only after native/config changes.
+
+```bash
+npm test          # unit tests
+npm run typecheck # TypeScript check
+```
+
+> **Windows note:** if a Gradle task fails with
+> `java.nio.file.AccessDeniedException` on a freshly-created
+> `.../build/generated/...` path, it's a one-time file-lock race (this repo
+> lives inside a OneDrive-synced folder, which sometimes very briefly locks
+> newly-created build output). Delete the specific `<module>/android/build`
+> directory mentioned in the error and rerun — it succeeds immediately on
+> retry and won't recur for that module.
+
+## Testing on your phone
 
 **USB:**
 1. On the phone: Settings → About phone → tap Build number 7× to enable
    Developer options, then enable **USB debugging**.
 2. Plug in the cable, accept the "Allow USB debugging?" prompt.
 3. `adb devices` should list the phone as `device`.
-4. `npx expo run:android` — first run generates `android/`, Gradle-builds and
-   installs the BiteWise dev app, and starts Metro over the cable
-   (`adb reverse tcp:8081`). Later runs: just `npx expo start` and open the
-   app (rebuild only after native/config changes).
+4. `npx react-native run-android`.
 
 **Wireless (Android 11+):**
 1. Developer options → **Wireless debugging** → *Pair device with pairing code*.
@@ -33,6 +63,18 @@ build-tools) with `ANDROID_HOME` set and `platform-tools` on `PATH`.
 3. Same commands as USB from there — no cable needed.
    Shortcut once connected via USB: `adb tcpip 5555`, `adb connect <phone-ip>:5555`.
 
+## Testing on an emulator
+
+Create an AVD once via Android Studio's Device Manager, or `avdmanager`, then:
+
+```bash
+emulator -avd <avd-name>       # boots the emulator
+npx react-native run-android   # builds/installs to whichever device/emulator adb sees
+```
+
+If both a phone and an emulator are connected, pick one with
+`npx react-native run-android --deviceId <id>` (see `adb devices` for ids).
+
 ### Firebase setup (optional during development)
 
 Copy `.env.example` to `.env` and fill in your Firebase web app config
@@ -40,11 +82,6 @@ Copy `.env.example` to `.env` and fill in your Firebase web app config
 Firestore** in the Firebase console, and publish `firebase/firestore.rules`.
 Without a `.env`, the app runs in local-only mode: any email/password signs
 you in and data stays on the device.
-
-> Windows + Node 24 note: Expo SDK 50's CLI crashes at startup
-> (`mkdir 'node:sea'`). Either use Node ≤ 20, or re-apply the one-line filter
-> patch in `node_modules/@expo/cli/build/src/start/server/metro/externals.js`
-> after a fresh install (filter out builtin names containing `:`).
 
 ---
 
