@@ -1,37 +1,84 @@
 import React from 'react';
-import { Button, Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 import { useAppStore } from '../stores/useAppStore';
+import { colors, radius, spacing, fontSize } from '../constants/theme';
+import {
+  AllergenIllustration,
+  InsightIllustration,
+  TrackIllustration,
+} from '../components/onboarding/Illustrations';
 
-const Skip = ({ ...props }) => <Button title="Skip" color="#000000" {...props} />;
-const Next = ({ ...props }) => <Button title="Next" color="#000000" {...props} />;
-const Done = ({ ...props }) => (
-  <TouchableOpacity style={{ marginHorizontal: 10 }} {...props}>
-    <Text style={{ fontSize: 15 }}>Done</Text>
+const Skip = ({ skipLabel, onPress }: { skipLabel: string; onPress: () => void }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+    style={{ marginLeft: spacing.lg }}
+  >
+    <Text style={{ color: colors.textMuted, fontSize: fontSize.sm, fontWeight: '600' }}>
+      {skipLabel}
+    </Text>
   </TouchableOpacity>
 );
+
+const Pill = ({ label, onPress }: { label: string; onPress: () => void }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={{
+      marginRight: spacing.lg,
+      backgroundColor: colors.primary,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+    }}
+  >
+    <Text
+      numberOfLines={1}
+      style={{ color: '#fff', fontSize: fontSize.md, fontWeight: '700' }}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
+
+const Next = ({ nextLabel, onPress }: { nextLabel: string; onPress: () => void }) => (
+  <Pill label={nextLabel} onPress={onPress} />
+);
+
+const Done = ({ onPress }: { onPress: () => void }) => <Pill label="Start" onPress={onPress} />;
 
 const Dots = ({ selected }: { selected: boolean }) => (
   <View
     style={{
-      width: 5,
-      height: 5,
+      width: selected ? 20 : 8,
+      height: 8,
+      borderRadius: 4,
       marginHorizontal: 3,
-      backgroundColor: selected ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.3)',
+      backgroundColor: selected ? colors.primary : colors.border,
     }}
   />
 );
-
-// onboarding1.png is a 1046x954 photo, the others are 528x472 illustrations —
-// without an explicit size the swiper renders them at natural size and the
-// photo overflows the page.
-const pageImage = { width: 320, height: 290, resizeMode: 'contain' as const };
 
 const OnboardingScreen = () => {
   const completeOnboarding = useAppStore((s) => s.completeOnboarding);
 
   return (
     <Onboarding
+      bottomBarHeight={88}
+      titleStyles={{
+        color: colors.text,
+        fontSize: fontSize.xl,
+        fontWeight: '800',
+        paddingHorizontal: spacing.lg,
+        paddingBottom: spacing.sm,
+      }}
+      subTitleStyles={{
+        color: colors.textMuted,
+        fontSize: fontSize.md,
+        lineHeight: 22,
+        paddingHorizontal: spacing.lg,
+      }}
+      imageContainerStyles={{ paddingBottom: spacing.xl }}
       SkipButtonComponent={Skip}
       NextButtonComponent={Next}
       DoneButtonComponent={Done}
@@ -40,22 +87,22 @@ const OnboardingScreen = () => {
       onDone={completeOnboarding}
       pages={[
         {
-          backgroundColor: '#a6e4d0',
-          image: <Image style={pageImage} source={require('../assets/onboarding1.png')} />,
-          title: 'Scan your meals',
-          subtitle: 'Scan food and make sure that there are no unwanted ingredients that could harm you.',
+          backgroundColor: colors.primaryLight,
+          image: <TrackIllustration />,
+          title: 'Track with ease',
+          subtitle: 'Log meals, symptoms, and stress in seconds, so patterns become obvious instead of overwhelming.',
         },
         {
-          backgroundColor: '#fdeb93',
-          image: <Image style={pageImage} source={require('../assets/onboarding2.png')} />,
-          title: 'Scan the barcode',
-          subtitle: 'Scan the food product’s barcode and make sure that there are no unwanted ingredients that could harm you.',
+          backgroundColor: colors.accent,
+          image: <AllergenIllustration />,
+          title: 'Unmask hidden allergens',
+          subtitle: 'We scan ingredient lists for sneaky aliases — like casein, tahini, or albumen — before they catch you off guard.',
         },
         {
-          backgroundColor: '#fff',
-          image: <Image style={pageImage} source={require('../assets/onboarding3.png')} />,
-          title: 'Scan the ingredient list',
-          subtitle: 'Scan the food product’s ingredient list and make sure that there are no unwanted ingredients that could harm you.',
+          backgroundColor: colors.background,
+          image: <InsightIllustration />,
+          title: 'Feel confident, not confused',
+          subtitle: 'See how food, stress, and symptoms connect, and get gentle guidance made for you.',
         },
       ]}
     />
