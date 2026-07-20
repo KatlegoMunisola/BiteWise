@@ -4,10 +4,34 @@
 
 ```bash
 npm install
-npx expo start        # scan the QR code with Expo Go, or press w for web
+npx expo start        # press w for web
 npm test              # unit tests
 npm run typecheck     # TypeScript check
 ```
+
+## Testing on your phone (Android dev build)
+
+This project uses a **development build** (`expo-dev-client`), not Expo Go.
+
+One-time machine setup: JDK 17 + Android SDK (platform 34, platform-tools,
+build-tools) with `ANDROID_HOME` set and `platform-tools` on `PATH`.
+
+**USB:**
+1. On the phone: Settings → About phone → tap Build number 7× to enable
+   Developer options, then enable **USB debugging**.
+2. Plug in the cable, accept the "Allow USB debugging?" prompt.
+3. `adb devices` should list the phone as `device`.
+4. `npx expo run:android` — first run generates `android/`, Gradle-builds and
+   installs the BiteWise dev app, and starts Metro over the cable
+   (`adb reverse tcp:8081`). Later runs: just `npx expo start` and open the
+   app (rebuild only after native/config changes).
+
+**Wireless (Android 11+):**
+1. Developer options → **Wireless debugging** → *Pair device with pairing code*.
+2. `adb pair <phone-ip>:<pair-port> <code>` (one-time), then
+   `adb connect <phone-ip>:<port>`.
+3. Same commands as USB from there — no cable needed.
+   Shortcut once connected via USB: `adb tcpip 5555`, `adb connect <phone-ip>:5555`.
 
 ### Firebase setup (optional during development)
 
