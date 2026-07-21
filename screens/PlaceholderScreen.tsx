@@ -23,9 +23,6 @@ export default function PlaceholderScreen({
   );
 }
 
-export const ScanPlaceholder = () => (
-  <PlaceholderScreen title="Barcode scanner" phase="Phase 2" icon="barcode-outline" />
-);
 export const InsightsPlaceholder = () => (
   <PlaceholderScreen title="Insights" phase="Phase 3" icon="stats-chart-outline" />
 );

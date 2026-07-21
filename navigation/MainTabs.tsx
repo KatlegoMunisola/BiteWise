@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import LogHomeScreen from '../screens/log/LogHomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import { InsightsPlaceholder, ScanPlaceholder } from '../screens/PlaceholderScreen';
+import { InsightsPlaceholder } from '../screens/PlaceholderScreen';
+import ScanCameraScreen from '../screens/scan/ScanCameraScreen';
 import { colors, fontSize, fontWeight, iconSize, spacing } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
@@ -47,7 +48,7 @@ export default function MainTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Log" component={LogHomeScreen} />
-      <Tab.Screen name="Scan" component={ScanPlaceholder} />
+      <Tab.Screen name="Scan" component={ScanCameraScreen} />
       <Tab.Screen name="Insights" component={InsightsPlaceholder} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

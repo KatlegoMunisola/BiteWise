@@ -8,14 +8,8 @@ import Screen from '../../components/ui/Screen';
 import { PrimaryButton } from '../../components/ui/Button';
 import { colors, fontSize, fontWeight, radius, spacing } from '../../constants/theme';
 import { nowISO } from '../../utils/dates';
+import { MEALS } from '../../constants/meals';
 import type { MealType, Portion } from '../../types/models';
-
-const MEALS: { value: MealType; label: string }[] = [
-  { value: 'breakfast', label: 'Breakfast' },
-  { value: 'lunch', label: 'Lunch' },
-  { value: 'dinner', label: 'Dinner' },
-  { value: 'snack', label: 'Snack' },
-];
 
 const PORTIONS: { value: Portion; label: string }[] = [
   { value: 'small', label: 'Small' },

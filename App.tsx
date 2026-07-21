@@ -13,6 +13,7 @@ import ProfileSetupScreen from './screens/ProfileSetupScreen';
 import FoodLogEntryScreen from './screens/log/FoodLogEntryScreen';
 import SymptomLogEntryScreen from './screens/log/SymptomLogEntryScreen';
 import DailyFactorsScreen from './screens/log/DailyFactorsScreen';
+import ScanResultScreen from './screens/scan/ScanResultScreen';
 import MainTabs from './navigation/MainTabs';
 import { useAppStore } from './stores/useAppStore';
 import { useAuthStore } from './stores/useAuthStore';
@@ -96,6 +97,11 @@ export default function App() {
                   name="DailyFactors"
                   component={DailyFactorsScreen}
                   options={{ presentation: 'modal', headerShown: true, title: 'Daily check-in' }}
+                />
+                <Stack.Screen
+                  name="ScanResult"
+                  component={ScanResultScreen}
+                  options={{ presentation: 'modal', headerShown: true, title: 'Scan result' }}
                 />
               </>
             )}
