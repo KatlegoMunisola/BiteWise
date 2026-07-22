@@ -14,6 +14,7 @@ import FoodLogEntryScreen from './screens/log/FoodLogEntryScreen';
 import SymptomLogEntryScreen from './screens/log/SymptomLogEntryScreen';
 import DailyFactorsScreen from './screens/log/DailyFactorsScreen';
 import ScanResultScreen from './screens/scan/ScanResultScreen';
+import MealPhotoResultScreen from './screens/scan/MealPhotoResultScreen';
 import MainTabs from './navigation/MainTabs';
 import { useAppStore } from './stores/useAppStore';
 import { useAuthStore } from './stores/useAuthStore';
@@ -102,6 +103,11 @@ export default function App() {
                   name="ScanResult"
                   component={ScanResultScreen}
                   options={{ presentation: 'modal', headerShown: true, title: 'Scan result' }}
+                />
+                <Stack.Screen
+                  name="MealPhotoResult"
+                  component={MealPhotoResultScreen}
+                  options={{ presentation: 'modal', headerShown: true, title: 'Meal photo' }}
                 />
               </>
             )}

@@ -19,6 +19,9 @@ web-build/
 # Metro
 .metro-health-check*
 
+# Cloudflare Workers
+.wrangler/
+
 # debug
 npm-debug.*
 yarn-debug.*

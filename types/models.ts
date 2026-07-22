@@ -39,7 +39,7 @@ export interface FoodLog extends Syncable {
   ingredients: string[];
   portion: Portion | null;
   barcode: string | null;
-  source: 'manual' | 'scan';
+  source: 'manual' | 'scan' | 'photo';
   /** ISO timestamp of when the food was eaten/logged. */
   loggedAt: string;
   /** 'YYYY-MM-DD' in device-local time — the correlation key. */

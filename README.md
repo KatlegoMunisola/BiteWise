@@ -40,12 +40,21 @@ npm run typecheck # TypeScript check
 ```
 
 > **Windows note:** if a Gradle task fails with
-> `java.nio.file.AccessDeniedException` on a freshly-created
-> `.../build/generated/...` path, it's a one-time file-lock race (this repo
-> lives inside a OneDrive-synced folder, which sometimes very briefly locks
-> newly-created build output). Delete the specific `<module>/android/build`
-> directory mentioned in the error and rerun — it succeeds immediately on
-> retry and won't recur for that module.
+> `java.nio.file.AccessDeniedException`, or with
+> `Cannot snapshot <path>: not a regular file`, it's the same underlying
+> file-lock race (this repo lives inside a OneDrive-synced folder, and
+> OneDrive's Files On-Demand placeholder mechanism sometimes races with
+> Gradle's rapid file creation during a build). It tends to hit whichever
+> module is being compiled for the **first time** in a given build variant —
+> so it's rare on repeat debug builds but can show up repeatedly the first
+> time you build `release` (or any variant you haven't built before), each
+> time on a different module. Delete the specific `<module>/android/build`
+> directory named in the error and rerun; each retry locks in progress on the
+> modules that already succeeded, so it converges after a few attempts even
+> if it doesn't clear on the first retry. Pinning the project folder
+> (`attrib +P <path> /S /D`, or right-click → "Always keep on this device" in
+> Explorer) reduces how often this happens. The only fully permanent fix is
+> moving the project outside any OneDrive-synced folder.
 
 ## Testing on your phone
 
@@ -82,6 +91,30 @@ Copy `.env.example` to `.env` and fill in your Firebase web app config
 Firestore** in the Firebase console, and publish `firebase/firestore.rules`.
 Without a `.env`, the app runs in local-only mode: any email/password signs
 you in and data stays on the device.
+
+### Distributing a build to testers
+
+Firebase App Distribution is wired up to hand a `release` build to testers
+without a Play Store listing:
+
+```bash
+cd android
+./gradlew.bat assembleRelease appDistributionUploadRelease
+```
+
+Edit `android/release-notes.txt` beforehand to describe what's in the build —
+its contents become the release notes testers see. The Firebase CLI must be
+logged in (`firebase login`, already done on this machine) for the upload to
+authenticate; no separate service-account key is needed for local/manual runs
+like this.
+
+Testers are managed as the `bitewise-testers` group in the `bitewise-79f10`
+Firebase project. Add more people via the Firebase console
+(Release & Monitor → App Distribution → Testers & Groups) or:
+
+```bash
+firebase appdistribution:testers:add someone@example.com --group-alias bitewise-testers --project bitewise-79f10
+```
 
 ---
 

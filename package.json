@@ -18,6 +18,7 @@
     "date-fns": "^4.4.0",
     "expo": "~50.0.14",
     "expo-crypto": "~12.8.1",
+    "expo-file-system": "~16.0.8",
     "expo-haptics": "~12.8.1",
     "expo-secure-store": "~12.8.1",
     "expo-sqlite": "~13.4.0",
