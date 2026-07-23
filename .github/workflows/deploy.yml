@@ -50,4 +50,7 @@ jobs:
         working-directory: android
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /home/runner/firebase-service-account.json
+          # Gives each App Distribution upload a distinct build number so
+          # releases aren't indistinguishable "1.0.0"s in the console.
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew assembleRelease appDistributionUploadRelease

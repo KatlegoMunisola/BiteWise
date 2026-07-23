@@ -84,7 +84,11 @@ android {
         applicationId 'com.katlegomunisola.bitewise'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        // CI (deploy.yml) sets ANDROID_VERSION_CODE to the GitHub Actions run
+        // number so each App Distribution upload gets a distinct build number;
+        // local/dev builds fall back to 1.
+        def ciVersionCode = (System.getenv("ANDROID_VERSION_CODE") ?: "1").toInteger()
+        versionCode ciVersionCode
         versionName "1.0.0"
 
         buildConfigField("boolean", "REACT_NATIVE_UNSTABLE_USE_RUNTIME_SCHEDULER_ALWAYS", (findProperty("reactNative.unstable_useRuntimeSchedulerAlways") ?: true).toString())
