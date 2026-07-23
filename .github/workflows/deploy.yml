@@ -1,0 +1,53 @@
+name: Deploy to testers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # See .github/workflows/ci.yml — matches the npm version the
+      # committed lockfile was generated with.
+      - run: npm install -g npm@11
+      - run: npm ci
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      # .env isn't committed (see .env.example) — reconstruct it from repo
+      # secrets so the build has real Firebase config instead of falling
+      # back to local-only mode.
+      - name: Write .env
+        run: |
+          cat > .env <<EOF
+          EXPO_PUBLIC_FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}
+          EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          EXPO_PUBLIC_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
+          EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          EXPO_PUBLIC_FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID }}
+          EOF
+
+      # App Distribution's Gradle plugin needs a service account for
+      # non-interactive auth — the personal `firebase login` used for local
+      # uploads has no headless equivalent.
+      - name: Write Firebase service account key
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$HOME/firebase-service-account.json"
+
+      - name: Build and upload release
+        working-directory: android
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /home/runner/firebase-service-account.json
+        run: ./gradlew assembleRelease appDistributionUploadRelease

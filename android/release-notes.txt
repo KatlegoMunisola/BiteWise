@@ -1,1 +1,4 @@
-Initial test build.
+- Added AI meal-photo allergen check (Scan tab): point the camera at unpackaged
+  or home-cooked food for a best-effort allergen estimate.
+- Real Firebase Authentication and account sync are now live — sign up/sign in
+  actually creates and syncs your account instead of running in local-only mode.
