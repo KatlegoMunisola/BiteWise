@@ -17,6 +17,12 @@ jobs:
           node-version: 20
           cache: npm
 
+      # Node 20 bundles npm ~10.x, but this repo's package-lock.json was
+      # generated with npm 11 (locally, via a much newer Node install).
+      # npm ci's lockfile-validation logic differs enough across npm major
+      # versions to spuriously fail otherwise — pin npm to match.
+      - run: npm install -g npm@11
+
       - run: npm ci
 
       - name: Typecheck
